@@ -15,18 +15,9 @@
  * 
  */
 
-static void map_init(char* map_file){
-    int max_map_size = 512;
-    char buf[max_map_size];
-    int ifd, n;
-;
-    ifd = open(map_file,O_RDONLY);
-    n = read(ifd, buf, max_map_size);
-    map = crush_decode((void*)buf, (void*)buf + n);
 
-    close(ifd);
-}
 
+/*
 int main(int argc, char** argv) {
     printf("before if");
     if(argc < 2)
@@ -42,5 +33,6 @@ int main(int argc, char** argv) {
     }
     return (EXIT_SUCCESS);
 }
+*/
 
 

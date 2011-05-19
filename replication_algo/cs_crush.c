@@ -36,22 +36,22 @@ void float_weights_32(float *weights, __u32 *u32_weights, int size)
     }
 }
 
-int block_to_nodes(int replica_num, unsigned long long offset,
-				int virtual_disk_id, int *osds, float *weights)
+int cs_map_input(struct crush_map *map, int input, int rule_id, int replica_num, int *result)
 {
-    __u32 u32_weights[1];
+    __u32 u32_weights[256^3];/*this weights for fail check*/
+    int no_preferred = -1;
+    int hashed_input;
+    //int virtual_disk_id = 1;
 
-    float_weights_32(weights, &u32_weights[0], 1); //alpha version, we have only 1 device
+    hashed_input = crush_hash32(CRUSH_HASH_RJENKINS1, input);  // hash must be from block
 
-    // map to osds[]
-    int x = crush_hash32_2(CRUSH_HASH_RJENKINS1, offset, virtual_disk_id);  // hash must be from block
+    memset(u32_weights, 1, sizeof(u32_weights));
 
-    // what crush rule?
-    int ruleno = crush_find_rule(map, 1, 1/*replicated*/, replica_num); //Alfa version!! We have only one rule with 0 ruleset and type = replicated
-    if (ruleno >= 0) {
-      return crush_do_rule(map, ruleno, x/*parametrization on hash*/, osds/*output*/,
-              replica_num/*max size of outputs*/, -1/*maybe will work =)*/, u32_weights);
-    }
+    //int ruleno = crush_find_rule(map, ruleset, type, replica_num);
+    if (rule_id >= 0) {
+      return crush_do_rule(map, rule_id, hashed_input, result, replica_num, no_preferred, u32_weights);
+    } else
+        return 0;
 }
 
 /*

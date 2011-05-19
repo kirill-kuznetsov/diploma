@@ -20,13 +20,9 @@
 #define unlikely(x)     (x)
 #endif
 
-/*Initial CRUSH map*/
-struct crush_map *map;
-
 void float_weights_32(float *weights, __u32 *u32_weights, int size);
 
-int block_to_nodes(int replica_num, unsigned long long offset,
-				int virtual_disk_id, int *osds, float *weights);
+int cs_map_input(struct crush_map *map, int input, int rule_id, int replica_num, int *result);
 
 struct crush_map *crush_decode(void *pbyval, void *end);
 struct __una_u16 { __u16 x __attribute__((packed)); };
