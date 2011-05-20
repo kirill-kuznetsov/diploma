@@ -11,8 +11,8 @@ CND_CONF=Release
 CND_DISTDIR=dist
 NBTMPDIR=build/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/replication_algo
-OUTPUT_BASENAME=replication_algo
+OUTPUT_PATH=${TESTDIR}/TestFiles/f3
+OUTPUT_BASENAME=f3
 PACKAGE_TOP_DIR=replicationalgo/
 
 # Functions

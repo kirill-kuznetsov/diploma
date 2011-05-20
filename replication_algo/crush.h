@@ -95,7 +95,8 @@ enum {
 	CRUSH_BUCKET_UNIFORM = 1,
 	CRUSH_BUCKET_LIST = 2,
 	CRUSH_BUCKET_TREE = 3,
-	CRUSH_BUCKET_STRAW = 4
+	CRUSH_BUCKET_STRAW = 4,
+        CRUSH_NO_BUCKETS
 };
 extern const char *crush_bucket_alg_name(int alg);
 
@@ -142,7 +143,13 @@ struct crush_bucket_straw {
 	__u32 *straws;         /* 16-bit fixed point */
 };
 
-
+struct crush_bucket_st {
+	struct crush_bucket h;  /* note: h.size is _tree_ size, not number of
+				   actual items */
+        __u8 num_nodes;
+	__u32 *node_straws;
+	__u32 *item_weights;
+};
 
 /*
  * CRUSH map includes all buckets, rules, etc.

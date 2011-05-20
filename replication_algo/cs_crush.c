@@ -38,7 +38,7 @@ void float_weights_32(float *weights, __u32 *u32_weights, int size)
 
 int cs_map_input(struct crush_map *map, int input, int rule_id, int replica_num, int *result)
 {
-    __u32 u32_weights[256^3];/*this weights for fail check*/
+    __u32 u32_weights[256^3];/*TODO: this weights for fail check*/
     int no_preferred = -1;
     int hashed_input;
     //int virtual_disk_id = 1;

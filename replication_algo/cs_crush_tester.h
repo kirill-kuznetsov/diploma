@@ -16,8 +16,11 @@ extern "C" {
 #define REPLICAS 3
 #define RULE_ID  0
 
+#define MAX_NODES 256
+#define MAX_DEVS 256
+
 void print_device_status(int *status, int n);
-void test_all();
+void test_all(int min_nodes, int max_nodes, int min_dpn, int max_dpn, int blocks_num);
 struct map_test_data
 {
     int write_time;

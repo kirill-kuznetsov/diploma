@@ -17,22 +17,9 @@
 
 
 
-/*
 int main(int argc, char** argv) {
-    printf("before if");
-    if(argc < 2)
-    {
-        printf("zero arg");
-        map_init ("./map");
-    }
-    else
-    {
-
-        printf("non zero");
-        map_init(argv[1]);
-    }
+    
     return (EXIT_SUCCESS);
 }
-*/
 
 

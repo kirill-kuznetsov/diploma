@@ -26,13 +26,16 @@ void crush_finalize(struct crush_map *map)
 {
 	int b;
 	__u32 i;
+        int j;
 
 	/* calc max_devices */
 	for (b=0; b<map->max_buckets; b++) {
 		if (map->buckets[b] == 0) continue;
 		for (i=0; i<map->buckets[b]->size; i++)
 			if (map->buckets[b]->items[i] >= map->max_devices)
+                        {
 				map->max_devices = map->buckets[b]->items[i] + 1;
+                        }
 	}
 
 	/* allocate arrays */
@@ -271,13 +274,13 @@ crush_make_tree_bucket(int hash, int type, int size,
 	for (i=0; i<size; i++) {
 		bucket->h.items[i] = items[i];
 		node = ((i+1) << 1)-1;
-		printf("item %d node %d weight %d\n", i, node, weights[i]);
+		//printf("item %d node %d weight %d\n", i, node, weights[i]);
 		bucket->node_weights[node] = weights[i];
 		bucket->h.weight += weights[i];
 		for (j=1; j<depth; j++) {
 			node = parent(node);
 			bucket->node_weights[node] += weights[i];
-			printf(" node %d weight %d\n", node, bucket->node_weights[node]);
+			//printf(" node %d weight %d\n", node, bucket->node_weights[node]);
 		}
 	}
 	BUG_ON(bucket->node_weights[bucket->num_nodes/2] != bucket->h.weight);

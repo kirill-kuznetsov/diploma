@@ -18,8 +18,8 @@ extern "C" {
 
 #define REPLICATION 1
 
-    struct crush_map* create_map(int devs_per_node, int root_bucket, int nodes, int node_lvl_bucket);
-    void create_rules(struct crush_map* map, int root_id);
+    struct crush_map* create_map(int root_bucket, int nodes, int node_lvl_bucket, int devs_per_node);
+    //void create_rules(struct crush_map* map, int root_id);
 
 #ifdef	__cplusplus
 }

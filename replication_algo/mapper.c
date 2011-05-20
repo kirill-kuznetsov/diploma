@@ -236,6 +236,45 @@ static int bucket_straw_choose(struct crush_bucket_straw *bucket,
 	return bucket->h.items[high];
 }
 
+/*
+static int bucket_st_choose(struct crush_bucket_st *bucket,
+			      int x, int r)
+{
+	int n, l;
+	__u32 w;
+	__u64 t;
+        __u32 draw;
+
+	n = bucket->num_nodes >> 1;
+
+	while (!terminal(n)) {
+
+		w = bucket->node_weights[n];
+		t = (__u64)crush_hash32_4(bucket->h.hash, x, n, r,
+					  bucket->h.id) * (__u64)w;
+		t = t >> 32;
+
+/
+		l = left(n);
+		if (t < bucket->node_weights[l])
+			n = l;
+		else
+			n = right(n);
+	}
+
+
+		draw = crush_hash32_3(bucket->h.hash, x, bucket->h.items[i], r);
+		draw &= 0xffff;
+		draw *= bucket->straws[i];
+		if (i == 0 || draw > high_draw) {
+			high = i;
+			high_draw = draw;
+		}
+
+	return bucket->h.items[n >> 1];
+}
+*/
+
 static int crush_bucket_choose(struct crush_bucket *in, int x, int r)
 {
 	dprintk(" crush_bucket_choose %d x=%d r=%d\n", in->id, x, r);

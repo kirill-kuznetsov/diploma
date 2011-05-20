@@ -5,8 +5,8 @@
 #include "cs_map_creator.h"
 
 void create_rules(struct crush_map *map, int root_id);
-struct crush_map *create_map(int devs_per_node, int root_bucket, int nodes,
-        int node_lvl_bucket)
+struct crush_map *create_map(int root_bucket, int nodes,
+        int node_lvl_bucket, int devs_per_node)
 {
 
     struct crush_map *map = crush_create();
