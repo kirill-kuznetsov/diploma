@@ -8,6 +8,7 @@
 
 #include "builder.h"
 #include "hash.h"
+#include "mapper.h"
 
 #define BUG_ON(x) assert(!(x))
 
@@ -170,7 +171,7 @@ crush_make_uniform_bucket(int hash, int type, int size,
 	bucket->item_weight = item_weight;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	bucket->h.perm = malloc(sizeof(__u32)*size);
+	//bucket->h.perm = malloc(sizeof(__u32)*size);
 	for (i=0; i<size; i++)
 		bucket->h.items[i] = items[i];
 
@@ -197,7 +198,7 @@ crush_make_list_bucket(int hash, int type, int size,
 	bucket->h.size = size;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	bucket->h.perm = malloc(sizeof(__u32)*size);
+	//bucket->h.perm = malloc(sizeof(__u32)*size);
 	bucket->item_weights = malloc(sizeof(__u32)*size);
 	bucket->sum_weights = malloc(sizeof(__u32)*size);
 	w = 0;
@@ -256,7 +257,7 @@ crush_make_tree_bucket(int hash, int type, int size,
 	bucket->h.size = size;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	bucket->h.perm = malloc(sizeof(__u32)*size);
+	//bucket->h.perm = malloc(sizeof(__u32)*size);
 
 	/* calc tree depth */
 	depth = 1;
@@ -283,12 +284,137 @@ crush_make_tree_bucket(int hash, int type, int size,
 			//printf(" node %d weight %d\n", node, bucket->node_weights[node]);
 		}
 	}
-	BUG_ON(bucket->node_weights[bucket->num_nodes/2] != bucket->h.weight);
+	//BUG_ON(bucket->node_weights[bucket->num_nodes/2] != bucket->h.weight);
 
 	return bucket;
 }
 
+void assign_straws(__u32 *node_weights, int node_num, int n, struct crush_bucket_st *bucket);
 
+struct crush_bucket_st*
+crush_make_st_bucket(int hash, int type, int size,
+		       int *items,    /* in leaf order */
+		       int *weights)
+{
+	struct crush_bucket_st *bucket;
+	int depth;
+	int node;
+	int t, i, j;
+
+	bucket = malloc(sizeof(*bucket));
+	memset(bucket, 0, sizeof(*bucket));
+	bucket->h.alg = CRUSH_BUCKET_ST;
+	bucket->h.hash = hash;
+	bucket->h.type = type;
+	bucket->h.size = size;
+
+	bucket->h.items = malloc(sizeof(__u32)*size);
+	//bucket->h.perm = malloc(sizeof(__u32)*size);
+
+	/* calc tree depth */
+	depth = 1;
+	t = size - 1;
+	while (t) {
+		t = t >> 1;
+		depth++;
+	}
+        
+	bucket->num_nodes = 1 << depth;
+        //printf("Num of nodes %d\n",bucket->num_nodes);
+	bucket->node_straws = malloc(sizeof(__u32)*bucket->num_nodes);
+        __u32 node_weights[bucket->num_nodes];
+
+	memset(bucket->h.items, 0, sizeof(__u32)*bucket->h.size);
+	memset(bucket->node_straws, 0, sizeof(__u32)*bucket->num_nodes);
+        memset(node_weights,0, sizeof(node_weights));
+
+	for (i=0; i<size; i++) {
+		bucket->h.items[i] = items[i];
+		node = ((i+1) << 1)-1;
+		//printf("item %d node %d weight %d\n", i, node, weights[i]);
+		node_weights[node] = weights[i];
+		bucket->h.weight += weights[i];
+		for (j=1; j<depth; j++) {
+			node = parent(node);
+			node_weights[node] += weights[i];
+			//printf(" node %d weight %d\n", node, node_weights[node]);
+		}
+	}
+	//BUG_ON(node_weights[bucket->num_nodes/2] != bucket->h.weight);
+
+        int n = bucket->num_nodes >> 1;
+        assign_straws(node_weights, bucket->num_nodes, n, bucket);
+ 
+        
+	return bucket;
+}
+
+void assign_straws(__u32 *node_weights, int node_num, int n, struct crush_bucket_st *bucket)
+{
+    int r,l,i,j;
+    int children_num = 2;
+    int children[children_num];
+
+    double straw, wbelow, lastw, wnext, pbelow;
+    int numleft;
+
+    if (!terminal(n)) {
+        l = left(n);
+        r = right(n);
+        if (node_weights[l] <= node_weights[r]) {
+            children[0] = l;
+            children[1] = r;
+        } else {
+            children[0] = r;
+            children[1] = l;
+        }
+        numleft = children_num;
+        wbelow = 0;
+        lastw = 0;
+        straw = 1.0;
+
+        i = 0;
+        while (i < children_num) {
+            /* zero weight nodes get 0 length straws! */
+            if (node_weights[children[i]] == 0) {
+                bucket->node_straws[children[i]] = 0;
+                i++;
+                continue;
+            }
+
+            /* set this nodes's straw */
+            bucket->node_straws[children[i]] = straw * 0x10000;
+            /*printf("item %d at %d weight %d straw %d (%lf)\n",
+                   items[reverse[i]],
+                   reverse[i], weights[reverse[i]], bucket->straws[reverse[i]], straw);*/
+            i++;
+            if (i == children_num) break;
+
+            /* same weight as previous? */
+            if (node_weights[children[i]] == node_weights[children[i - 1]]) {
+                /*printf("same as previous\n");*/
+                continue;
+            }
+
+            /* adjust straw for next child*/
+            wbelow += ((double) node_weights[children[i - 1]] - lastw) * numleft;
+            for (j = i; j < children_num; j++)
+                if (node_weights[children[j]] == node_weights[children[i]])
+                    numleft--;
+                else
+                    break;
+            wnext = numleft * (node_weights[children[i]] - node_weights[children[i - 1]]);
+            pbelow = wbelow / (wbelow + wnext);
+            /*printf("wbelow %lf  wnext %lf  pbelow %lf\n", wbelow, wnext, pbelow);*/
+
+            straw *= pow((double) 1.0 / pbelow, (double) 1.0 / (double) numleft);
+
+            lastw = node_weights[children[i - 1]];
+        }
+        assign_straws(node_weights, bucket->num_nodes, l, bucket);
+        assign_straws(node_weights, bucket->num_nodes, r, bucket);
+    }
+}
 
 /* straw bucket */
 
@@ -314,7 +440,7 @@ crush_make_straw_bucket(int hash,
 	bucket->h.size = size;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	bucket->h.perm = malloc(sizeof(__u32)*size);
+	//bucket->h.perm = malloc(sizeof(__u32)*size);
 	bucket->item_weights = malloc(sizeof(__u32)*size);
 	bucket->straws = malloc(sizeof(__u32)*size);
 

@@ -35,4 +35,9 @@ crush_make_straw_bucket(int hash, int type, int size,
 			int *items,
 			int *weights);
 
+struct crush_bucket_st*
+crush_make_st_bucket(int hash, int type, int size,
+		       int *items,   /* in leaf order */
+		       int *weights);
+
 #endif

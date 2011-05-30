@@ -21,6 +21,8 @@ extern "C" {
 
 void print_device_status(int *status, int n);
 void test_all(int min_nodes, int max_nodes, int min_dpn, int max_dpn, int blocks_num);
+
+inline long long get_time();
 struct map_test_data
 {
     int write_time;

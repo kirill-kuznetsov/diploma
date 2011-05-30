@@ -216,10 +216,12 @@ struct crush_map *crush_decode(void *pbyval, void *end)
 		b->items = calloc(b->size, sizeof(__s32));
 		if (b->items == NULL)
 			goto badmem;
+/*
 		b->perm = calloc(b->size, sizeof(__u32));
 		if (b->perm == NULL)
 			goto badmem;
 		b->perm_n = 0;
+*/
 
 		ceph_decode_need(p, end, b->size*sizeof(__u32), bad);
 		for (j = 0; j < b->size; j++)

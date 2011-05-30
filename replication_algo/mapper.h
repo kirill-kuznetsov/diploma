@@ -16,5 +16,9 @@ extern int crush_do_rule(struct crush_map *map,
 			 int x, int *result, int result_max,
 			 int forcefeed,    /* -1 for none */
 			 __u32 *weights);
+extern int left(int x);
+extern int right(int x);
+extern int terminal(int x);
+extern int crush_bucket_choose(struct crush_bucket* in, int x, int r);
 
 #endif

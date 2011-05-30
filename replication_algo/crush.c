@@ -71,7 +71,7 @@ void crush_calc_parents(struct crush_map *map)
 
 void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b)
 {
-	kfree(b->h.perm);
+	//kfree(b->h.perm);
 	kfree(b->h.items);
 	kfree(b);
 }
@@ -80,7 +80,7 @@ void crush_destroy_bucket_list(struct crush_bucket_list *b)
 {
 	kfree(b->item_weights);
 	kfree(b->sum_weights);
-	kfree(b->h.perm);
+	//kfree(b->h.perm);
 	kfree(b->h.items);
 	kfree(b);
 }
@@ -91,11 +91,18 @@ void crush_destroy_bucket_tree(struct crush_bucket_tree *b)
 	kfree(b);
 }
 
+void crush_destroy_bucket_st(struct crush_bucket_st *b)
+{
+        kfree(b->node_straws);
+        kfree(b->item_weights);
+	kfree(b);
+}
+
 void crush_destroy_bucket_straw(struct crush_bucket_straw *b)
 {
 	kfree(b->straws);
 	kfree(b->item_weights);
-	kfree(b->h.perm);
+	//kfree(b->h.perm);
 	kfree(b->h.items);
 	kfree(b);
 }
@@ -114,6 +121,9 @@ void crush_destroy_bucket(struct crush_bucket *b)
 		break;
 	case CRUSH_BUCKET_STRAW:
 		crush_destroy_bucket_straw((struct crush_bucket_straw *)b);
+		break;
+        case CRUSH_BUCKET_ST:
+		crush_destroy_bucket_st((struct crush_bucket_st*)b);
 		break;
 	}
 }

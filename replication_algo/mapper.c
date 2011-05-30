@@ -68,20 +68,21 @@ int crush_find_rule(struct crush_map *map, int ruleset, int type, int size)
 static int bucket_perm_choose(struct crush_bucket *bucket,
 			      int x, int r)
 {
+/*
 	unsigned pr = r % bucket->size;
 	unsigned i, s;
 
-	/* start a new permutation if @x has changed */
+	// start a new permutation if @x has changed
 	if (bucket->perm_x != x || bucket->perm_n == 0) {
 		dprintk("bucket %d new x=%d\n", bucket->id, x);
 		bucket->perm_x = x;
 
-		/* optimize common r=0 case */
+		// optimize common r=0 case
 		if (pr == 0) {
 			s = crush_hash32_3(bucket->hash, x, bucket->id, 0) %
 				bucket->size;
 			bucket->perm[0] = s;
-			bucket->perm_n = 0xffff;   /* magic value, see below */
+			bucket->perm_n = 0xffff;   // magic value, see below
 			goto out;
 		}
 
@@ -89,19 +90,19 @@ static int bucket_perm_choose(struct crush_bucket *bucket,
 			bucket->perm[i] = i;
 		bucket->perm_n = 0;
 	} else if (bucket->perm_n == 0xffff) {
-		/* clean up after the r=0 case above */
+		// clean up after the r=0 case above
 		for (i = 1; i < bucket->size; i++)
 			bucket->perm[i] = i;
 		bucket->perm[bucket->perm[0]] = 0;
 		bucket->perm_n = 1;
 	}
 
-	/* calculate permutation up to pr */
+	// calculate permutation up to pr
 	for (i = 0; i < bucket->perm_n; i++)
 		dprintk(" perm_choose have %d: %d\n", i, bucket->perm[i]);
 	while (bucket->perm_n <= pr) {
 		unsigned p = bucket->perm_n;
-		/* no point in swapping the final entry */
+		// no point in swapping the final entry
 		if (p < bucket->size - 1) {
 			i = crush_hash32_3(bucket->hash, x, bucket->id, p) %
 				(bucket->size - p);
@@ -122,6 +123,8 @@ out:
 	dprintk(" perm_choose %d sz=%d x=%d r=%d (%d) s=%d\n", bucket->id,
 		bucket->size, x, r, pr, s);
 	return bucket->items[s];
+*/
+
 }
 
 /* uniform */
@@ -158,7 +161,7 @@ static int bucket_list_choose(struct crush_bucket_list *bucket,
 
 
 /* (binary) tree */
-static int height(int n)
+int height(int n)
 {
 	int h = 0;
 	while ((n & 1) == 0) {
@@ -168,19 +171,19 @@ static int height(int n)
 	return h;
 }
 
-static int left(int x)
+int left(int x)
 {
 	int h = height(x);
 	return x - (1 << (h-1));
 }
 
-static int right(int x)
+int right(int x)
 {
 	int h = height(x);
 	return x + (1 << (h-1));
 }
 
-static int terminal(int x)
+int terminal(int x)
 {
 	return x & 1;
 }
@@ -236,46 +239,34 @@ static int bucket_straw_choose(struct crush_bucket_straw *bucket,
 	return bucket->h.items[high];
 }
 
-/*
+
 static int bucket_st_choose(struct crush_bucket_st *bucket,
-			      int x, int r)
+			      int x, int replica_num)
 {
-	int n, l;
-	__u32 w;
-	__u64 t;
-        __u32 draw;
+	int n, l, r;
+        __u32 ldraw, rdraw;
 
 	n = bucket->num_nodes >> 1;
 
 	while (!terminal(n)) {
+                l = left(n);
+                ldraw = crush_hash32_4(bucket->h.hash, x, l, replica_num, r);
+		ldraw &= 0xffff;
+		ldraw *= bucket->node_straws[l];
+                
+                r = right(n);
+                rdraw = crush_hash32_4(bucket->h.hash, x, r, replica_num, l);
+		rdraw &= 0xffff;
+		rdraw *= bucket->node_straws[r];
 
-		w = bucket->node_weights[n];
-		t = (__u64)crush_hash32_4(bucket->h.hash, x, n, r,
-					  bucket->h.id) * (__u64)w;
-		t = t >> 32;
-
-/
-		l = left(n);
-		if (t < bucket->node_weights[l])
-			n = l;
-		else
-			n = right(n);
+                n = rdraw > ldraw ? r : l;
 	}
-
-
-		draw = crush_hash32_3(bucket->h.hash, x, bucket->h.items[i], r);
-		draw &= 0xffff;
-		draw *= bucket->straws[i];
-		if (i == 0 || draw > high_draw) {
-			high = i;
-			high_draw = draw;
-		}
-
-	return bucket->h.items[n >> 1];
+        int a = n>>1;
+        int res = bucket->h.items[a];
+        return bucket->h.items[n >> 1];
 }
-*/
 
-static int crush_bucket_choose(struct crush_bucket *in, int x, int r)
+int crush_bucket_choose(struct crush_bucket *in, int x, int r)
 {
 	dprintk(" crush_bucket_choose %d x=%d r=%d\n", in->id, x, r);
 	switch (in->alg) {
@@ -290,6 +281,9 @@ static int crush_bucket_choose(struct crush_bucket *in, int x, int r)
 					  x, r);
 	case CRUSH_BUCKET_STRAW:
 		return bucket_straw_choose((struct crush_bucket_straw *)in,
+					   x, r);
+        case CRUSH_BUCKET_ST:
+		return bucket_st_choose((struct crush_bucket_st *)in,
 					   x, r);
 	default:
 		BUG_ON(1);

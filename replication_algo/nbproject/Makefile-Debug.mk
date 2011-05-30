@@ -34,6 +34,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/hash.o \
+	${OBJECTDIR}/cs_bucket_tester.o \
 	${OBJECTDIR}/cs_map_creator.o \
 	${OBJECTDIR}/crush.o \
 	${OBJECTDIR}/mapper.o \
@@ -49,6 +50,7 @@ TESTDIR=build/${CND_CONF}/${CND_PLATFORM}/tests
 TESTFILES= \
 	${TESTDIR}/TestFiles/f1 \
 	${TESTDIR}/TestFiles/f3 \
+	${TESTDIR}/TestFiles/f4 \
 	${TESTDIR}/TestFiles/f2
 
 # C Compiler Flags
@@ -79,6 +81,11 @@ ${OBJECTDIR}/hash.o: hash.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/hash.o hash.c
+
+${OBJECTDIR}/cs_bucket_tester.o: cs_bucket_tester.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/cs_bucket_tester.o cs_bucket_tester.c
 
 ${OBJECTDIR}/cs_map_creator.o: cs_map_creator.c 
 	${MKDIR} -p ${OBJECTDIR}
@@ -128,6 +135,10 @@ ${TESTDIR}/TestFiles/f3: ${TESTDIR}/tests/newsimpletest4.o ${OBJECTFILES:%.o=%_n
 	${MKDIR} -p ${TESTDIR}/TestFiles
 	${LINK.c} -o ${TESTDIR}/TestFiles/f3 $^ ${LDLIBSOPTIONS} 
 
+${TESTDIR}/TestFiles/f4: ${TESTDIR}/tests/newsimpletest5.o ${OBJECTFILES:%.o=%_nomain.o}
+	${MKDIR} -p ${TESTDIR}/TestFiles
+	${LINK.c} -o ${TESTDIR}/TestFiles/f4 $^ ${LDLIBSOPTIONS} 
+
 ${TESTDIR}/TestFiles/f2: ${TESTDIR}/tests/newsimpletest3.o ${OBJECTFILES:%.o=%_nomain.o}
 	${MKDIR} -p ${TESTDIR}/TestFiles
 	${LINK.c} -o ${TESTDIR}/TestFiles/f2 $^ ${LDLIBSOPTIONS} 
@@ -136,19 +147,25 @@ ${TESTDIR}/TestFiles/f2: ${TESTDIR}/tests/newsimpletest3.o ${OBJECTFILES:%.o=%_n
 ${TESTDIR}/tests/newsimpletest.o: tests/newsimpletest.c 
 	${MKDIR} -p ${TESTDIR}/tests
 	${RM} $@.d
-	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest.o tests/newsimpletest.c
+	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest.o tests/newsimpletest.c
 
 
 ${TESTDIR}/tests/newsimpletest4.o: tests/newsimpletest4.c 
 	${MKDIR} -p ${TESTDIR}/tests
 	${RM} $@.d
-	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest4.o tests/newsimpletest4.c
+	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest4.o tests/newsimpletest4.c
+
+
+${TESTDIR}/tests/newsimpletest5.o: tests/newsimpletest5.c 
+	${MKDIR} -p ${TESTDIR}/tests
+	${RM} $@.d
+	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest5.o tests/newsimpletest5.c
 
 
 ${TESTDIR}/tests/newsimpletest3.o: tests/newsimpletest3.c 
 	${MKDIR} -p ${TESTDIR}/tests
 	${RM} $@.d
-	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest3.o tests/newsimpletest3.c
+	$(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -I. -MMD -MP -MF $@.d -o ${TESTDIR}/tests/newsimpletest3.o tests/newsimpletest3.c
 
 
 ${OBJECTDIR}/hash_nomain.o: ${OBJECTDIR}/hash.o hash.c 
@@ -162,6 +179,19 @@ ${OBJECTDIR}/hash_nomain.o: ${OBJECTDIR}/hash.o hash.c
 	    $(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/hash_nomain.o hash.c;\
 	else  \
 	    ${CP} ${OBJECTDIR}/hash.o ${OBJECTDIR}/hash_nomain.o;\
+	fi
+
+${OBJECTDIR}/cs_bucket_tester_nomain.o: ${OBJECTDIR}/cs_bucket_tester.o cs_bucket_tester.c 
+	${MKDIR} -p ${OBJECTDIR}
+	@NMOUTPUT=`${NM} ${OBJECTDIR}/cs_bucket_tester.o`; \
+	if (echo "$$NMOUTPUT" | ${GREP} '|main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T main$$') || \
+	   (echo "$$NMOUTPUT" | ${GREP} 'T _main$$'); \
+	then  \
+	    ${RM} $@.d;\
+	    $(COMPILE.c) -g -Wall -I. -I. -I. -I. -I. -I. -I. -I. -Dmain=__nomain -MMD -MP -MF $@.d -o ${OBJECTDIR}/cs_bucket_tester_nomain.o cs_bucket_tester.c;\
+	else  \
+	    ${CP} ${OBJECTDIR}/cs_bucket_tester.o ${OBJECTDIR}/cs_bucket_tester_nomain.o;\
 	fi
 
 ${OBJECTDIR}/cs_map_creator_nomain.o: ${OBJECTDIR}/cs_map_creator.o cs_map_creator.c 
@@ -261,6 +291,7 @@ ${OBJECTDIR}/cs_crush_nomain.o: ${OBJECTDIR}/cs_crush.o cs_crush.c
 	then  \
 	    ${TESTDIR}/TestFiles/f1 || true; \
 	    ${TESTDIR}/TestFiles/f3 || true; \
+	    ${TESTDIR}/TestFiles/f4 || true; \
 	    ${TESTDIR}/TestFiles/f2 || true; \
 	else  \
 	    ./${TEST} || true; \
