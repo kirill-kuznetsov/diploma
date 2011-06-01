@@ -20,5 +20,9 @@ extern int left(int x);
 extern int right(int x);
 extern int terminal(int x);
 extern int crush_bucket_choose(struct crush_bucket* in, int x, int r);
+//CS
+extern int cs_map_input(struct crush_map *map, int input, int rule_id, int replica_num, int *result);
+extern int bucket_rushr_choose(struct crush_bucket_rushr *bucket,
+        int x, int replica_num, int* result);
 
 #endif

@@ -98,6 +98,13 @@ void crush_destroy_bucket_st(struct crush_bucket_st *b)
 	kfree(b);
 }
 
+void crush_destroy_bucket_rushr(struct crush_bucket_rushr *b)
+{
+    //TODO: future fields
+        kfree(b->item_weights);
+	kfree(b);
+}
+
 void crush_destroy_bucket_straw(struct crush_bucket_straw *b)
 {
 	kfree(b->straws);
@@ -122,8 +129,8 @@ void crush_destroy_bucket(struct crush_bucket *b)
 	case CRUSH_BUCKET_STRAW:
 		crush_destroy_bucket_straw((struct crush_bucket_straw *)b);
 		break;
-        case CRUSH_BUCKET_ST:
-		crush_destroy_bucket_st((struct crush_bucket_st*)b);
+        case CRUSH_BUCKET_RUSHR:
+		crush_destroy_bucket_rushr((struct crush_bucket_rushr*)b);
 		break;
 	}
 }

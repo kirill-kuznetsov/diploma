@@ -1,19 +1,14 @@
-/*
- * File:   crush_cs_tester.c
- * Author: kirill
- *
- * Created on 15 Май 2011 г., 21:44
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <assert.h>
+#include <string.h>
 
 #include "crush.h"
-#include "cs_crush.h"
+#include "mapper.h"
 #include "cs_crush_tester.h"
 #include "cs_map_creator.h"
+
 
 /*
  *
@@ -40,9 +35,9 @@ void print_test_results( int root_bucket,
 void test_all(int min_nodes, int max_nodes, int min_dpn, int max_dpn, int blocks_num)
 {
     int node_bucket, root_bucket, nodes, devs_per_node;
-    for(root_bucket = CRUSH_BUCKET_LIST; root_bucket < CRUSH_NO_BUCKETS; root_bucket++)
+    for(root_bucket = CRUSH_BUCKET_LIST; root_bucket < CRUSH_BUCKETS_END; root_bucket++)
     {
-        for(node_bucket = CRUSH_BUCKET_LIST; node_bucket < CRUSH_NO_BUCKETS; node_bucket++)
+        for(node_bucket = CRUSH_BUCKET_LIST; node_bucket < CRUSH_BUCKETS_END; node_bucket++)
         {
             for(nodes = min_nodes; nodes < max_nodes; nodes++)
             {
@@ -65,12 +60,12 @@ void test_map(int blocks_num, struct map_test_data *test_data )
 {
     int dev_num = test_data->map->max_devices;
     int all_devices[dev_num];
-    memset(all_devices, 0, sizeof (all_devices));
+    memset((void*)all_devices, 0, sizeof (all_devices));
     //writing
     test_data->write_time = test_write( test_data->map, all_devices, blocks_num);
     test_data->disbalance = max_disbalance(all_devices, dev_num, blocks_num);
-    //estimate redistribution expenses due to cluster changes
 
+    //estimate redistribution expenses due to cluster changes
     test_remap( blocks_num, test_data);
 }
 

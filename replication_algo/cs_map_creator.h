@@ -1,10 +1,3 @@
-/* 
- * File:   cs_map_creator.h
- * Author: kirill
- *
- * Created on 17 Май 2011 г., 17:05
- */
-
 #ifndef CS_MAP_CREATOR_H
 #define	CS_MAP_CREATOR_H
 

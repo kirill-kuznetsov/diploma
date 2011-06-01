@@ -27,7 +27,6 @@ void crush_finalize(struct crush_map *map)
 {
 	int b;
 	__u32 i;
-        int j;
 
 	/* calc max_devices */
 	for (b=0; b<map->max_buckets; b++) {
@@ -171,7 +170,7 @@ crush_make_uniform_bucket(int hash, int type, int size,
 	bucket->item_weight = item_weight;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	//bucket->h.perm = malloc(sizeof(__u32)*size);
+	bucket->h.perm = malloc(sizeof(__u32)*size);
 	for (i=0; i<size; i++)
 		bucket->h.items[i] = items[i];
 
@@ -198,7 +197,7 @@ crush_make_list_bucket(int hash, int type, int size,
 	bucket->h.size = size;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	//bucket->h.perm = malloc(sizeof(__u32)*size);
+	bucket->h.perm = malloc(sizeof(__u32)*size);
 	bucket->item_weights = malloc(sizeof(__u32)*size);
 	bucket->sum_weights = malloc(sizeof(__u32)*size);
 	w = 0;
@@ -257,7 +256,7 @@ crush_make_tree_bucket(int hash, int type, int size,
 	bucket->h.size = size;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	//bucket->h.perm = malloc(sizeof(__u32)*size);
+	bucket->h.perm = malloc(sizeof(__u32)*size);
 
 	/* calc tree depth */
 	depth = 1;
@@ -291,9 +290,10 @@ crush_make_tree_bucket(int hash, int type, int size,
 
 void assign_straws(__u32 *node_weights, int node_num, int n, struct crush_bucket_st *bucket);
 
+/*
 struct crush_bucket_st*
 crush_make_st_bucket(int hash, int type, int size,
-		       int *items,    /* in leaf order */
+		       int *items,    //in leaf order
 		       int *weights)
 {
 	struct crush_bucket_st *bucket;
@@ -311,7 +311,7 @@ crush_make_st_bucket(int hash, int type, int size,
 	bucket->h.items = malloc(sizeof(__u32)*size);
 	//bucket->h.perm = malloc(sizeof(__u32)*size);
 
-	/* calc tree depth */
+	//calc tree depth
 	depth = 1;
 	t = size - 1;
 	while (t) {
@@ -348,6 +348,7 @@ crush_make_st_bucket(int hash, int type, int size,
         
 	return bucket;
 }
+*/
 
 void assign_straws(__u32 *node_weights, int node_num, int n, struct crush_bucket_st *bucket)
 {
@@ -440,7 +441,7 @@ crush_make_straw_bucket(int hash,
 	bucket->h.size = size;
 
 	bucket->h.items = malloc(sizeof(__u32)*size);
-	//bucket->h.perm = malloc(sizeof(__u32)*size);
+	bucket->h.perm = malloc(sizeof(__u32)*size);
 	bucket->item_weights = malloc(sizeof(__u32)*size);
 	bucket->straws = malloc(sizeof(__u32)*size);
 
@@ -517,6 +518,37 @@ crush_make_straw_bucket(int hash,
 	return bucket;
 }
 
+struct crush_bucket_rushr *
+crush_make_rushr_bucket(int hash, int type, int size, int *items, int *weights)
+{
+        int i;
+	int w;
+	struct crush_bucket_rushr *bucket;
+
+	bucket = malloc(sizeof(*bucket));
+	memset(bucket, 0, sizeof(*bucket));
+	bucket->h.alg = CRUSH_BUCKET_RUSHR;
+	bucket->h.hash = hash;
+	bucket->h.type = type;
+	bucket->h.size = size;
+
+	bucket->h.items = malloc(sizeof(__u32)*size);
+	bucket->h.perm = malloc(sizeof(__u32)*size);
+	bucket->item_weights = malloc(sizeof(__u32)*size);
+	bucket->sum_weights = malloc(sizeof(__u32)*size);
+	w = 0;
+	for (i=0; i<size; i++) {
+		bucket->h.items[i] = items[i];
+		bucket->item_weights[i] = weights[i];
+		w += weights[i];
+		bucket->sum_weights[i] = w;
+		/*printf("pos %d item %d weight %d sum %d\n",
+		  i, items[i], weights[i], bucket->sum_weights[i]);*/
+	}
+
+	bucket->h.weight = w;
+	return bucket;
+}
 
 
 struct crush_bucket*
@@ -542,6 +574,8 @@ crush_make_bucket(int alg, int hash, int type, int size,
 
 	case CRUSH_BUCKET_STRAW:
 		return (struct crush_bucket *)crush_make_straw_bucket(hash, type, size, items, weights);
+        case CRUSH_BUCKET_RUSHR:
+		return (struct rushr_bucket *)crush_make_rushr_bucket(hash, type, size, items, weights);
 	}
 	return 0;
 }

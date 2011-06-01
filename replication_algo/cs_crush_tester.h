@@ -1,10 +1,3 @@
-/* 
- * File:   cs_crush_tester.h
- * Author: kirill
- *
- * Created on 18 Май 2011 г., 16:00
- */
-
 #ifndef CS_CRUSH_TESTER_H
 #define	CS_CRUSH_TESTER_H
 

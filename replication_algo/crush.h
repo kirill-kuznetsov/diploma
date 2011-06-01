@@ -96,8 +96,8 @@ enum {
 	CRUSH_BUCKET_LIST = 2,
 	CRUSH_BUCKET_TREE = 3,
 	CRUSH_BUCKET_STRAW = 4,
-        CRUSH_BUCKET_ST = 5,
-        CRUSH_NO_BUCKETS
+        CRUSH_BUCKET_RUSHR = 5,
+        CRUSH_BUCKETS_END
 };
 extern const char *crush_bucket_alg_name(int alg);
 
@@ -114,9 +114,9 @@ struct crush_bucket {
 	 * cached random permutation: used for uniform bucket and for
 	 * the linear search fallback for the other bucket types.
 //	 */
-//	__u32 perm_x;  /* @x for which *perm is defined */
-//	__u32 perm_n;  /* num elements of *perm that are permuted/defined */
-//	__u32 *perm;
+	__u32 perm_x;  /* @x for which *perm is defined */
+	__u32 perm_n;  /* num elements of *perm that are permuted/defined */
+	__u32 *perm;
 };
 
 struct crush_bucket_uniform {
@@ -150,6 +150,13 @@ struct crush_bucket_st {
         __u8 num_nodes;
 	__u32 *node_straws;
 	__u32 *item_weights;
+};
+
+struct crush_bucket_rushr{
+        struct crush_bucket h;
+
+        __u32 *item_weights;
+        __u32 *sum_weights;
 };
 
 /*

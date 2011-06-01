@@ -4,7 +4,7 @@
 #include "hash.h"
 #include "cs_map_creator.h"
 
-void create_rules(struct crush_map *map, int root_id);
+void create_test_rules(struct crush_map *map, int root_id);
 struct crush_map *create_map(int root_bucket, int nodes,
         int node_lvl_bucket, int devs_per_node)
 {
@@ -49,19 +49,18 @@ struct crush_map *create_map(int root_bucket, int nodes,
         struct crush_bucket *b = crush_make_bucket(root_bucket, CRUSH_HASH_DEFAULT, ROOT, devs_per_node, items, weights);
         root_id = crush_add_bucket(map, 0, b);
     }
-    create_rules(map, root_id);
+    create_test_rules(map, root_id);
     crush_finalize(map);
     return map;
 }
 
-void create_rules(struct crush_map *map, int root_id)
+void create_test_rules(struct crush_map *map, int root_id)
 {
     int i;
     int rulesets = 1;
     int length = 3;
     int min_rep = 1;
     int max_rep = map->max_devices;
-    int nodes_replica = 4;
 
     for (i = 0; i < rulesets; i++) {
         struct crush_rule *rule = crush_make_rule(length, i, REPLICATION, min_rep, max_rep);
@@ -70,6 +69,11 @@ void create_rules(struct crush_map *map, int root_id)
         crush_rule_set_step(rule, 2, CRUSH_RULE_EMIT, 0, 0);
         int rno = crush_add_rule(map, rule, -1);
     }
+}
+
+void create_rules(struct crush_map *map, int root_id, int steps, int* replica_nums)
+{
+
     //one bucket
     /*
             for (map<int,const char*>::iterator p = rulesets.begin(); p != rulesets.end(); p++) {
